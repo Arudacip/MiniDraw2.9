@@ -85,8 +85,9 @@ public class Figura implements Serializable {
 		this.movimentos = movimentos;
 	}
 	
-	public void clearMovimentos() {
+	public void clear() {
 		this.movimentos = new ArrayList<Integer>();
+		this.inicio = new Point(0,0);
 	}
 	
 	public Color getCorInterna() {
@@ -123,23 +124,62 @@ public class Figura implements Serializable {
 	
 	// OPERATIONS
 	
+	public void ajustaTriangulo() {
+		ArrayList<Integer> mov1 = new ArrayList<>();
+		mov1.add(movimentos.get(0));
+		ArrayList<Integer> mov2 = new ArrayList<>();
+		ArrayList<Integer> mov3 = new ArrayList<>();
+		mov3.add(movimentos.get(movimentos.size()-1));
+		for (int i = 0; i < movimentos.size(); i++) {
+			int x = movimentos.get(i);
+			if (x == mov1.get(0)) {
+				mov1.add(x);
+			} else if (x == mov3.get(0)) {
+				mov3.add(x);
+			} else {
+				mov2.add(x);
+			}
+		}
+		System.out.println("Triangulo - Pre Ajustes:");
+		System.out.println("Mov1=[" + printVet(mov1) + "]");
+		System.out.println("Mov2=[" + printVet(mov2) + "]");
+		System.out.println("Mov3=[" + printVet(mov3) + "]");
+		while (mov1.size() != mov2.size() || mov1.size() != mov3.size()) {
+			if (mov1.size() > mov2.size() || mov1.size() > mov3.size()) {
+				mov1.remove(0);
+			} else if (mov2.size() > mov1.size() || mov2.size() > mov3.size()) {
+				mov2.remove(0);
+			} else if (mov3.size() > mov2.size() || mov3.size() > mov1.size()) {
+				mov3.remove(0);
+			}
+		}
+		System.out.println("Triangulo - Pos Ajustes:");
+		System.out.println("Mov1=[" + printVet(mov1) + "]");
+		System.out.println("Mov2=[" + printVet(mov2) + "]");
+		System.out.println("Mov3=[" + printVet(mov3) + "]");
+		movimentos.clear();
+		movimentos.addAll(mov1);
+		movimentos.addAll(mov2);
+		movimentos.addAll(mov3);
+	}
+	
 	public void addSequencia(int mov) {
 		movimentos.add(mov);
 	}
 	
 	@Override
     public String toString() {
-		String texto = "Figura:\n Inicio=[" + inicio.x + "," + inicio.y + "]\n Movimentos=[" + printMov() +
+		String texto = "Figura:\n Inicio=[" + inicio.x + "," + inicio.y + "]\n Movimentos=[" + printVet(movimentos) +
 				"]\n Passo=" + passo;
         return texto;
     }
 	
-	private String printMov() {
+	private String printVet(ArrayList<Integer> vet) {
 		String texto = "";
-		for (int i=0; i < movimentos.size()-1; i++) {
-			texto = texto + movimentos.get(i) + ", ";
+		for (int i=0; i < vet.size()-1; i++) {
+			texto = texto + vet.get(i) + ", ";
 		}
-		texto = texto + movimentos.get(movimentos.size()-1);
+		texto = texto + vet.get(vet.size()-1);
 		return texto;
 	}
 	

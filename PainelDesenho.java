@@ -10,13 +10,11 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	private Figura figura;
 	private ArrayList<Figura> pilha, historico;
 	private ArrayList <Point> pontos;
-	private Point ultimoDraw, ultimoRead;
-	@SuppressWarnings("unused")
-	private Point coordAtual;
-	private boolean holdCtrl;
+	private Point ultimoDraw, ultimoRead, coordAtual;
+	private boolean mkLine, holdCtrl;
 	@SuppressWarnings("unused")
 	private boolean holdAlt;
-	private int funcaoAtiva; 
+	private int funcaoAtiva;
 	
 	public PainelDesenho (InterfaceGrafica p) {
 		aplicacao = p;
@@ -36,12 +34,12 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		ultimoRead = new Point(0,0);
 		holdCtrl = false;
 		holdAlt = false;
+		mkLine = false;
 	}
 	
 	public void paint(Graphics g) {	
 		super.paintComponent(g);
-		Graphics2D g2d = (Graphics2D) g.create(); // nunca trabalhe diretamente sobre g, apenas sobre uma copia de g  
-        g2d.setColor(aplicacao.getCorBordaAtual());
+		Graphics2D g2d = (Graphics2D) g.create(); // nunca trabalhe diretamente sobre g, apenas sobre uma copia de g
 		
 		// PILHA
     	for (int j = 0; j < pilha.size(); j++) {
@@ -49,6 +47,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
     		ArrayList<Point> tempPontos = new ArrayList<Point>();
     		g2d.setColor(tempFigura.getCorBorda());
     		tempPontos = freeman(tempFigura);
+    		ultimoDraw = tempPontos.get(tempPontos.size()-1);
     		for (int i=1; i < tempPontos.size(); i++) {
     			Point anterior = tempPontos.get(i-1);
     			Point atual = tempPontos.get(i);
@@ -65,12 +64,26 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
     	}
     	
     	// FIGURA
-        g2d.setColor(figura.getCorBorda());
+        g2d.setColor(aplicacao.getCorBordaAtual());
         pontos = freeman(figura);
+        figura.setCorBorda(aplicacao.getCorBordaAtual());
+		if (!pontos.isEmpty()) {
+			ultimoDraw = pontos.get(pontos.size()-1);
+			System.out.println("Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
+			if (funcaoAtiva == 1) {
+				System.out.println("[F1] Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
+				proxFigura();
+			}
+		}
 		for (int i=1; i < pontos.size(); i++) {
 			Point anterior = pontos.get(i-1);
 			Point atual = pontos.get(i);
 			g2d.drawLine(anterior.x, anterior.y,atual.x , atual.y);
+			if (funcaoAtiva == 0) {
+				ultimoDraw = atual;
+				System.out.println("[F0] Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
+				proxFigura();
+			}
 		}
 		
 		// MARCADOR
@@ -84,14 +97,14 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		}
 		
 		// LINHA
-		//if(mkLine) {
-		//	if(pontos.size()>0) {
-    	//		float[] dash = {20f};
-        //    	g2d.setStroke(new BasicStroke (4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dash, 0f));
-        //    	g2d.setColor(figura.getCorBorda().brighter());
-        //    	g2d.drawLine(ultimoPonto.x, ultimoPonto.y, coordAtual.x, coordAtual.y);
-    	//	}
-		//}
+		if(mkLine) {
+			if(pontos.size()>0) {
+    			float[] dash = {5f};
+            	g2d.setStroke(new BasicStroke (2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dash, 0f));
+            	g2d.setColor(figura.getCorBorda());
+            	g2d.drawLine(ultimoDraw.x, ultimoDraw.y, coordAtual.x, coordAtual.y);
+    		}
+		}
 		
 		g2d.dispose(); //toda vez que voce usa "create" e necessario usar "dispose"
 	}
@@ -106,14 +119,10 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		Point inicio = figura.getInicio();
 		Point p;
 		int passo = figura.getPasso();
-		double valor = (passo*passo)*2;
-		int diagonal = (int) Math.sqrt(valor);
 		ArrayList<Point> saida = new ArrayList<Point>();
 		if (inicio.x != 0 && inicio.y != 0) {
 			saida.add(inicio);
 		}
-		//System.out.println("Passo="+ passo + " / Diagonal="+ diagonal);
-		
 		for (int i=0; i < figura.getMovimentos().size(); i++) {
 			int num = figura.getMovimentos().get(i);
 			switch (num) {
@@ -125,7 +134,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 				break;
 			case 1:
 				// Movimento 1
-				p = new Point(saida.get(i).x + diagonal, saida.get(i).y - diagonal);
+				p = new Point(saida.get(i).x + passo, saida.get(i).y - passo);
 				saida.add(p);
 				ultimoDraw = p;
 				break;
@@ -137,7 +146,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 				break;
 			case 3:
 				// Movimento 3
-				p = new Point(saida.get(i).x - diagonal, saida.get(i).y - diagonal);
+				p = new Point(saida.get(i).x - passo, saida.get(i).y - passo);
 				saida.add(p);
 				ultimoDraw = p;
 				break;
@@ -149,7 +158,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 				break;
 			case 5:
 				// Movimento 5
-				p = new Point(saida.get(i).x - diagonal, saida.get(i).y + diagonal);
+				p = new Point(saida.get(i).x - passo, saida.get(i).y + passo);
 				saida.add(p);
 				ultimoDraw = p;
 				break;
@@ -161,7 +170,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 				break;
 			case 7:
 				// Movimento 7
-				p = new Point(saida.get(i).x + diagonal, saida.get(i).y + diagonal);
+				p = new Point(saida.get(i).x + passo, saida.get(i).y + passo);
 				saida.add(p);
 				ultimoDraw = p;
 				break;
@@ -176,7 +185,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	}
 	
 	// Monta o passo referente ao ponto
-	private int reverse(Point anterior, Point p, int passo) {
+	private int[] reverse(Point anterior, Point p, int passo) {
 		int passoX, passoY, mov = 0;
 		passoX = (p.x - anterior.x)/passo;
 		passoY = (p.y - anterior.y)/passo;
@@ -202,36 +211,92 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		} else {
 			System.out.println("Erro desconhecido: passoX=" + passoX + " / passoY=" + passoY);
 		}
-		return mov;
+		int[] saida = {mov, passoX, passoY}; 
+		return saida;
+	}
+	
+	// Faz o movimento referente ao passo necessario em sequencia ordenada 
+	public void movimento(Point anterior, Point atual, int passo, Figura figura) {
+		int mov;
+		int[] saida;
+		saida = reverse(anterior, atual, passo);
+		int counterX = saida[1]; // movimentos em X
+		int counterY = saida[2]; // movimentos em Y
+		//MOVIMENTO APENAS EM X
+		if (Math.abs(counterX) > 0 && counterY == 0) {
+			System.out.println("ContadorX:" + counterX);
+			while (Math.abs(counterX) > 0) {
+				saida = reverse(anterior, atual, passo);
+				mov = saida[0];
+				figura.addSequencia(mov);
+				if (counterX > 0) {
+					counterX = counterX - 1;
+				} else if (counterX < 0) {
+					counterX = counterX + 1;
+				}
+			}
+		}
+		//MOVIMENTO APENAS EM Y
+		if (Math.abs(counterY) > 0 && counterX == 0) {
+			System.out.println("ContadorY:" + counterY);
+			while (Math.abs(counterY) > 0) {
+				saida = reverse(anterior, atual, passo);
+				mov = saida[0];
+				figura.addSequencia(mov);
+				if (counterY > 0) {
+					counterY = counterY - 1;
+				} else if (counterY < 0) {
+					counterY = counterY + 1;
+				}
+			}
+		}
+		//MOVIMENTO EM DIAGONAL
+		if (Math.abs(counterX) > 0 || Math.abs(counterY) > 0) {
+			System.out.println("ContadorX:" + counterX + " / ContadorY:" + counterY);
+			while (Math.abs(counterX) > 0 && Math.abs(counterY) > 0) {
+				saida = reverse(anterior, atual, passo);
+				mov = saida[0];
+				figura.addSequencia(mov);
+				if (counterX > 0) {
+					counterX = counterX - 1;
+				} else if (counterX < 0) {
+					counterX = counterX + 1;
+				}
+				if (counterY > 0) {
+					counterY = counterY - 1;
+				} else if (counterY < 0) {
+					counterY = counterY + 1;
+				}
+			}
+		}
+	}
+	
+	// Verifica se a figura foi fechada
+	private void proxFigura() {
+		System.out.println("Checa se a figura esta fechada");
+		System.out.println("Inicio: X=" + figura.getInicio().getX() + " / Y=" + figura.getInicio().getY());
+		System.out.println("Final: X=" + ultimoDraw.getX() + " / Y=" + ultimoDraw.getY());
+		if (!figura.getMovimentos().isEmpty()) {
+			if (figura.getInicio().getX() == ultimoDraw.getX() && figura.getInicio().getY() == ultimoDraw.getY()) {
+				System.out.println("Inicio: X=" + figura.getInicio().getX() + " / Y=" + figura.getInicio().getY());
+				System.out.println("Final: X=" + ultimoDraw.getX() + " / Y=" + ultimoDraw.getY());
+				// ARMAZENA A FIGURA E SEGUE PARA A PROXIMA
+				pararFigura();
+			}
+		}
 	}
 	
 	// Armazena a figura na pilha e libera o atributo principal para a proxima figura na pilha
-	private void proxFigura() {
-		if (!pontos.isEmpty()) {
-			if (pontos.get(0).getX() == pontos.get(pontos.size() - 1).getX()
-					&& pontos.get(0).getY() == pontos.get(pontos.size() - 1).getY() && pontos.size() > 1) {
-				
-				System.out.println("Inicio: X=" + figura.getInicio().getX() + " / Y=" + figura.getInicio().getY());
-				System.out.println("Final: X=" + ultimoDraw.getX() + " / Y=" + ultimoDraw.getY());
-				// MOSTRA A FIGURA
-				System.out.println(figura.toString());
-				pilha.add(figura);
-				figura = new Figura(aplicacao.getCorBordaAtual(), aplicacao.getCorFundoAtual(),
-						figura.hasMarker(), figura.getDiametro());
-				pontos = new ArrayList<Point>();
-				historico.clear();
-			}
-		}
-/**		if (figura.getInicio().getX() == ultimoPonto.getX()
-				&& figura.getInicio().getY() == ultimoPonto.getY() && figura.getMovimentos().size() > 1) {
-			pilha.add(figura);
-			figura = new Figura(aplicacao.getCorBordaAtual(), aplicacao.getCorFundoAtual(),
-						figura.hasMarker(), figura.getDiametro());
-			pontos = new ArrayList<Point>();
-			historico.clear();
-			//ultimoPonto = new Point(0,0);
-			repaint();
-		} */
+	private void pararFigura() {
+		// MOSTRA A FIGURA
+		System.out.println(figura.toString());
+		pilha.add(figura);
+		figura = new Figura(aplicacao.getCorBordaAtual(), aplicacao.getCorFundoAtual(), figura.hasMarker(), figura.getDiametro());
+		mkLine = false;
+		pontos = new ArrayList<Point>();
+		historico.clear();
+		ultimoDraw = new Point(0,0); 
+		repaint();
 	}
 	
 	// FUNCAO DE UNDO
@@ -288,18 +353,19 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	        	if (inicio.x == 0 && inicio.y == 0) {
 					figura.setInicio(p);
 					ultimoRead = p;
+					mkLine = true;
 				} else {
 		    		// Adicionar movimento
-		    		System.out.println("P Anterior: x=" + ultimoRead.x + " / y=" + ultimoRead.y);
-					int mov = reverse(ultimoRead, p, passo);
-					figura.addSequencia(mov);
+		    		System.out.println("P Anterior: x=" + pontos.get(pontos.size()-1).x + " / y=" + pontos.get(pontos.size()-1).y);
+					int[] mov = reverse(pontos.get(pontos.size()-1), p, passo);
+					figura.addSequencia(mov[0]);
 					ultimoRead = p;
+					ultimoDraw = p;
 				}
 	    	}
 	    	else {
-	    		//fechar a figura
-	    		//pontos.add(pontos.get(0));
-	    		//ultimoPonto = pontos.get(0);
+	    		// Parar no estado atual
+				pararFigura();
 	    	}
 			break;
 		case 1:
@@ -318,14 +384,14 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 				}
 	    	}
 	    	else {
-	    		// NADA
+	    		// Parar no estado atual
+				pararFigura();
 	    	}
 			break;
 		case 2:
 			// FUNCAO DE DESENHAR UM RETANGULO
 			
-			if (e.getButton() == MouseEvent.BUTTON1) 
-			{
+			if (e.getButton() == MouseEvent.BUTTON1) {
 				if(inicio.x == 0 && inicio.y == 0) {
 					Point p1 = e.getPoint();
 		    		System.out.println("P1 Original: x=" + p1.x + " / y=" + p1.y);
@@ -334,36 +400,36 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		    		System.out.println("P1 Corrigido: x=" + p1.x + " / y=" + p1.y);
 					figura.setInicio(p1);
 					ultimoRead = p1;
+					mkLine = true;
 				}
-				else
-				{
+				else {
 					Point p2 = e.getPoint();
 		    		System.out.println("P2 Original: x=" + p2.x + " / y=" + p2.y);
 					p2.x = (p2.x/passo)*passo;
 		    		p2.y = (p2.y/passo)*passo;
 		    		System.out.println("P2 Corrigido: x=" + p2.x + " / y=" + p2.y);
+					mkLine = false;
 					Point p3 = new Point();
 					p3.setLocation(figura.getInicio().getX(), p2.getY());
 					Point p4 = new Point();
 					p4.setLocation(p2.getX(), figura.getInicio().getY());
-					//pontos.add(p4);
-					//pontos.add(p2);
-					//pontos.add(p3);
-					//pontos.add(pontos.get(0));
 					
-					// ADAPTA OS PONTOS EM MOVIMENTOS
-					System.out.println("N de movimentos:" + figura.getMovimentos().size());
-					int mov = reverse(figura.getInicio(), p4, passo);
-					figura.addSequencia(mov);
-					mov = reverse(p4, p2, passo);
-					figura.addSequencia(mov);
-					mov = reverse(p2, p3, passo);
-					figura.addSequencia(mov);
-					mov = reverse(p3, figura.getInicio(), passo);
-					figura.addSequencia(mov);
+					// MOVIMENTO 1
+					movimento(figura.getInicio(), p4, passo, figura);
+					// MOVIMENTO 2
+					movimento(p4, p2, passo, figura);
+					// MOVIMENTO 3
+					movimento(p2, p3, passo, figura);
+					// MOVIMENTO 2
+					movimento(p3, figura.getInicio(), passo, figura);
+					// FEITO O RETANGULO
 					ultimoRead = figura.getInicio();
+					mkLine = false;
 					System.out.println(figura.toString());
 				}
+			} else {
+	    		// Parar no estado atual
+				pararFigura();
 			}
 			break;
 		case 3:
@@ -378,26 +444,34 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		    		System.out.println("P1 Corrigido: x=" + p1.x + " / y=" + p1.y);
 					figura.setInicio(p1);
 					ultimoRead = p1;
+					mkLine = true;
 				}
 				else {
 					Point p2 = e.getPoint();
+		    		System.out.println("P2 Original: x=" + p2.x + " / y=" + p2.y);
+					p2.x = (p2.x/passo)*passo;
+		    		p2.y = (p2.y/passo)*passo;
+		    		System.out.println("P2 Corrigido: x=" + p2.x + " / y=" + p2.y);
+					mkLine = false;
 					Point p3 = new Point();
 					p3.setLocation(figura.getInicio().getX(), p2.getY());
-					//pontos.add(p2);
-					//pontos.add(p3);
-					//pontos.add(pontos.get(0));
 					
-					// ADAPTA OS PONTOS EM MOVIMENTOS
-					System.out.println("N de movimentos:" + figura.getMovimentos().size());
-					int mov = reverse(figura.getInicio(), p2, passo);
-					figura.addSequencia(mov);
-					mov = reverse(p2, p3, passo);
-					figura.addSequencia(mov);
-					mov = reverse(p3, figura.getInicio(), passo);
-					figura.addSequencia(mov);
+					// MOVIMENTO 1
+					movimento(figura.getInicio(), p2, passo, figura);
+					// MOVIMENTO 2
+					movimento(p2, p3, passo, figura);
+					// MOVIMENTO 3
+					movimento(p3, figura.getInicio(), passo, figura);
+					// Ajusta o triangulo
+					figura.ajustaTriangulo();
+					// FEITO O TRIANGULO
 					ultimoRead = figura.getInicio();
+					mkLine = false;
 					System.out.println(figura.toString());
 				}
+			} else {
+	    		// Parar no estado atual
+				pararFigura();
 			}
 			break;
 		default:
@@ -412,18 +486,19 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	        	if (inicio.x == 0 && inicio.y == 0) {
 					figura.setInicio(p);
 					ultimoRead = p;
+					mkLine = true;
 				} else {
 		    		// Adicionar movimento
-		    		System.out.println("P Anterior: x=" + ultimoRead.x + " / y=" + ultimoRead.y);
-					int mov = reverse(ultimoRead, p, passo);
-					figura.addSequencia(mov);
+		    		System.out.println("P Anterior: x=" + pontos.get(pontos.size()-1).x + " / y=" + pontos.get(pontos.size()-1).y);
+					int[] mov = reverse(pontos.get(pontos.size()-1), p, passo);
+					figura.addSequencia(mov[0]);
 					ultimoRead = p;
+					ultimoDraw = p;
 				}
 	    	}
 	    	else {
-	    		//fechar a figura
-	    		//pontos.add(pontos.get(0));
-	    		//ultimoPonto = pontos.get(0);
+	    		// Parar no estado atual
+				pararFigura();
 	    	}
 			break;
 		}
@@ -432,23 +507,27 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		proxFigura();
     }
     
+    public void mouseMoved(MouseEvent e) {
+    	coordAtual = e.getPoint();
+    	repaint();
+    }
+    
     // UNUSED
-    public void mouseMoved(MouseEvent e) { }
     public void mouseClicked(MouseEvent e) { }
     public void mouseEntered(MouseEvent e) { }
     public void mouseExited(MouseEvent e) { }
     public void mouseReleased(MouseEvent e) { }
     public void mouseDragged(MouseEvent e) { }
+    // FIM UNUSED
     
 	//INTERFACE KeyListener
+    
 	public void keyPressed(KeyEvent e) {
 		int passo = figura.getPasso();
-		double divisao = passo/2;
-		int diagonal = (int) Math.sqrt(divisao);
 		
 		// TECLA ESC 
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			figura.clearMovimentos();
+			figura.clear();
 		}
 		// TECLA CTRL
 		if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
@@ -480,63 +559,93 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 			// FUNCAO DE DESENHAR UMA SEQUENCIA DE FREEMAN
 			
 			//TECLA 0
-			if(e.getKeyCode() == KeyEvent.VK_0) {	
+			if(e.getKeyCode() == KeyEvent.VK_0) {
 				Point p = new Point(ultimoRead.x+passo, ultimoRead.y);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(0);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 1
 			if(e.getKeyCode() == KeyEvent.VK_1) {	
-				Point p = new Point(ultimoRead.x+diagonal, ultimoRead.y+diagonal);
+				Point p = new Point(ultimoRead.x+passo, ultimoRead.y+passo);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(1);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 2
 			if(e.getKeyCode() == KeyEvent.VK_2) {	
 				Point p = new Point(ultimoRead.x, ultimoRead.y-passo);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(2);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 3
 			if(e.getKeyCode() == KeyEvent.VK_3) {	
-				Point p = new Point(ultimoRead.x-diagonal, ultimoRead.y-diagonal);
+				Point p = new Point(ultimoRead.x-passo, ultimoRead.y-passo);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(3);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 4
 			if(e.getKeyCode() == KeyEvent.VK_4) {	
 				Point p = new Point(ultimoRead.x-passo, ultimoRead.y);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(4);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 5
 			if(e.getKeyCode() == KeyEvent.VK_5) {	
-				Point p = new Point(ultimoRead.x-diagonal, ultimoRead.y+diagonal);
+				Point p = new Point(ultimoRead.x-passo, ultimoRead.y+passo);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(5);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 6
 			if(e.getKeyCode() == KeyEvent.VK_6) {	
 				Point p = new Point(ultimoRead.x, ultimoRead.y+passo);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(6);
 				ultimoRead = p;
+				ultimoDraw = p;
 			}
 			
 			//TECLA 7
 			if(e.getKeyCode() == KeyEvent.VK_7) {	
-				Point p = new Point(ultimoRead.x+diagonal, ultimoRead.y+diagonal);
+				Point p = new Point(ultimoRead.x+passo, ultimoRead.y+passo);
+				System.out.println("Anterior x=" + ultimoRead.x + " / y=" + ultimoRead.y);
+				System.out.println("Atual x=" + p.x + " / y=" + p.y);
 				figura.addSequencia(7);
 				ultimoRead = p;
+				ultimoDraw = p;
+			}
+			
+			//TECLA ENTER
+			if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+	    		// Parar no estado atual
+				pararFigura();
 			}
 			break;
 		case 2:
-			// FUNCAO DE DESENHAR UM RETANGULO
+			// FUNCAO DE DESENHAR UM TRIANGULO
 			// NAO FAZ NADA
 			break;
 		case 3:
@@ -564,6 +673,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	
 	// UNUSED
 	public void keyReleased(KeyEvent e) { }
+	// FIM UNUSED
 	
 	// METODOS DE ACESSO
 	

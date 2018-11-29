@@ -9,7 +9,8 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	private InterfaceGrafica aplicacao;
 	private Figura figura;
 	private ArrayList<Figura> pilha, historico;
-	private ArrayList <Point> pontos;
+	private ArrayList<Point> pontos, pontosHist = new ArrayList<Point>();
+	private ArrayList<Integer> movsHist = new ArrayList<Integer>();
 	private Point ultimoDraw, ultimoRead, coordAtual;
 	private boolean mkLine, holdCtrl;
 	@SuppressWarnings("unused")
@@ -69,9 +70,9 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
         figura.setCorBorda(aplicacao.getCorBordaAtual());
 		if (!pontos.isEmpty()) {
 			ultimoDraw = pontos.get(pontos.size()-1);
-			System.out.println("Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
+			// System.out.println("Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
 			if (funcaoAtiva == 1) {
-				System.out.println("[F1] Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
+				//System.out.println("[F1] Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
 				proxFigura();
 			}
 		}
@@ -81,7 +82,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 			g2d.drawLine(anterior.x, anterior.y,atual.x , atual.y);
 			if (funcaoAtiva == 0) {
 				ultimoDraw = atual;
-				System.out.println("[F0] Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
+				//System.out.println("[F0] Ultimo Desenhado x=" + ultimoDraw.x + " / y=" + ultimoDraw.y);
 				proxFigura();
 			}
 		}
@@ -97,14 +98,14 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		}
 		
 		// LINHA
-		if(mkLine) {
+		/*if(mkLine) {
 			if(pontos.size()>0) {
     			float[] dash = {5f};
             	g2d.setStroke(new BasicStroke (2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dash, 0f));
             	g2d.setColor(figura.getCorBorda());
             	g2d.drawLine(ultimoDraw.x, ultimoDraw.y, coordAtual.x, coordAtual.y);
     		}
-		}
+		}*/
 		
 		g2d.dispose(); //toda vez que voce usa "create" e necessario usar "dispose"
 	}
@@ -125,59 +126,68 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		}
 		for (int i=0; i < figura.getMovimentos().size(); i++) {
 			int num = figura.getMovimentos().get(i);
-			switch (num) {
-			case 0:
-				// Movimento 0
-				p = new Point(saida.get(i).x + passo, saida.get(i).y);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 1:
-				// Movimento 1
-				p = new Point(saida.get(i).x + passo, saida.get(i).y - passo);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 2:
-				// Movimento 2
-				p = new Point(saida.get(i).x, saida.get(i).y - passo);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 3:
-				// Movimento 3
-				p = new Point(saida.get(i).x - passo, saida.get(i).y - passo);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 4:
-				// Movimento 4
-				p = new Point(saida.get(i).x - passo, saida.get(i).y);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 5:
-				// Movimento 5
-				p = new Point(saida.get(i).x - passo, saida.get(i).y + passo);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 6:
-				// Movimento 6
-				p = new Point(saida.get(i).x, saida.get(i).y + passo);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			case 7:
-				// Movimento 7
-				p = new Point(saida.get(i).x + passo, saida.get(i).y + passo);
-				saida.add(p);
-				ultimoDraw = p;
-				break;
-			default:
-				// NAO FAZ NADA, PQ NAO DEVE SER ATIVADO
-				break;
-				// Fim da sequencia
+			try 
+			{
+				switch (num) {
+				case 0:
+					// Movimento 0
+					p = new Point(saida.get(i).x + passo, saida.get(i).y);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				case 1:
+					// Movimento 1
+					p = new Point(saida.get(i).x + passo, saida.get(i).y - passo);
+					saida.add(p);
+					ultimoDraw = p;
+					
+					
+					break;
+				case 2:
+					// Movimento 2
+					p = new Point(saida.get(i).x, saida.get(i).y - passo);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				case 3:
+					// Movimento 3
+					p = new Point(saida.get(i).x - passo, saida.get(i).y - passo);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				case 4:
+					// Movimento 4
+					p = new Point(saida.get(i).x - passo, saida.get(i).y);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				case 5:
+					// Movimento 5
+					p = new Point(saida.get(i).x - passo, saida.get(i).y + passo);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				case 6:
+					// Movimento 6
+					p = new Point(saida.get(i).x, saida.get(i).y + passo);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				case 7:
+					// Movimento 7
+					p = new Point(saida.get(i).x + passo, saida.get(i).y + passo);
+					saida.add(p);
+					ultimoDraw = p;
+					break;
+				default:
+					// NAO FAZ NADA, PQ NAO DEVE SER ATIVADO
+					break;
+					// Fim da sequencia
+				}
+			}
+			catch(Exception e)
+			{
+				pararFigura();
 			}
 		}
 		// Retorna a sequencia preparada
@@ -273,9 +283,9 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	
 	// Verifica se a figura foi fechada
 	private void proxFigura() {
-		System.out.println("Checa se a figura esta fechada");
-		System.out.println("Inicio: X=" + figura.getInicio().getX() + " / Y=" + figura.getInicio().getY());
-		System.out.println("Final: X=" + ultimoDraw.getX() + " / Y=" + ultimoDraw.getY());
+		//System.out.println("Checa se a figura esta fechada");
+		//System.out.println("Inicio: X=" + figura.getInicio().getX() + " / Y=" + figura.getInicio().getY());
+		//System.out.println("Final: X=" + ultimoDraw.getX() + " / Y=" + ultimoDraw.getY());
 		if (!figura.getMovimentos().isEmpty()) {
 			if (figura.getInicio().getX() == ultimoDraw.getX() && figura.getInicio().getY() == ultimoDraw.getY()) {
 				System.out.println("Inicio: X=" + figura.getInicio().getX() + " / Y=" + figura.getInicio().getY());
@@ -289,6 +299,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	// Armazena a figura na pilha e libera o atributo principal para a proxima figura na pilha
 	private void pararFigura() {
 		// MOSTRA A FIGURA
+
 		System.out.println(figura.toString());
 		pilha.add(figura);
 		figura = new Figura(aplicacao.getCorBordaAtual(), aplicacao.getCorFundoAtual(), figura.hasMarker(), figura.getDiametro());
@@ -305,6 +316,19 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 			historico.add(pilha.get(pilha.size() - 1));
 			pilha.remove(pilha.size() - 1);
 		}
+		else if(!figura.getMovimentos().isEmpty())
+		{
+			ArrayList<Integer> meusMovs = figura.getMovimentos();
+			movsHist.add(meusMovs.get(meusMovs.size() - 1));
+			meusMovs.remove(meusMovs.size() - 1);
+			figura.setMovimentos(meusMovs);
+			if(figura.getMovimentos().isEmpty())
+			{
+				figura.setInicio(new Point(0,0));
+				pontosHist.add(pontos.get(0));
+				pontos.clear();
+			}
+		}
 		holdCtrl = false;
 	}
 	
@@ -313,6 +337,19 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 		if (!historico.isEmpty()) {
 			pilha.add(historico.get(historico.size() - 1));
 			historico.remove(historico.size() - 1);
+		}
+		else if (!movsHist.isEmpty())
+		{
+			if(pontosHist.size() == 1)
+			{
+				figura.setInicio(pontosHist.get(0));
+				pontosHist.remove(0);
+			}
+			ArrayList<Integer> meusMovs = figura.getMovimentos();
+			meusMovs.add(movsHist.get(movsHist.size() - 1));
+			movsHist.remove(movsHist.size() - 1);
+			figura.setMovimentos(meusMovs);
+			repaint();
 		}
 		holdCtrl = false;
 	}
@@ -509,7 +546,7 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
     
     public void mouseMoved(MouseEvent e) {
     	coordAtual = e.getPoint();
-    	repaint();
+    	//repaint();
     }
     
     // UNUSED
@@ -538,15 +575,18 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 			holdAlt = true;
 		}
 		// TECLA CTRL + Z
-		if (e.getKeyCode() == KeyEvent.VK_Z && holdCtrl) {
+		if (e.getKeyCode() == KeyEvent.VK_Z  && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0))//&& holdCtrl) {
+		{
+			
 			// Tecla Ctrl+Z - Cancela o ultimo passo
-			//undo();
+			undo();
 			holdCtrl = false;
 		}
 		// TECLA CTRL + Y
-		if (e.getKeyCode() == KeyEvent.VK_Y && holdCtrl) {
+		if (e.getKeyCode() == KeyEvent.VK_Y  && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0))//&& holdCtrl) 
+		{
 			// Tecla Ctrl+Y - Refaz o ultimo passo
-			//redo();
+			redo();
 			holdCtrl = false;
 		}
 		

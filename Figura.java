@@ -21,7 +21,7 @@ public class Figura implements Serializable {
 	public Figura() {
 		this.inicio = new Point(0,0);
 		this.passo = 20;
-		this.diametro = 10;
+		this.diametro = 5;
 		this.movimentos = new ArrayList<>();
 		this.corBorda = Color.BLACK;
 		this.corInterna = Color.WHITE;

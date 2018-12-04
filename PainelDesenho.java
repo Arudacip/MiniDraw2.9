@@ -17,6 +17,14 @@ public class PainelDesenho extends JPanel implements MouseListener, MouseMotionL
 	private boolean holdAlt;
 	private int funcaoAtiva;
 	
+	public void setPasso(int passo)
+	{
+		figura.setPasso(passo);
+	}
+	public int getPasso()
+	{
+		return figura.getPasso();
+	}
 	public PainelDesenho (InterfaceGrafica p) {
 		aplicacao = p;
 		addMouseListener(this);

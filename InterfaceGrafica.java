@@ -22,7 +22,7 @@ public class InterfaceGrafica extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private Color corBordaAtual, corFundoAtual;
 	private PainelDesenho painel; // painel onde o desenho e feito
-	private JMenuItem mNovo, mAbrir, mSalvar, mSair, mudaCorInterna, mudaCorDeBorda; // itens de menu
+	private JMenuItem mNovo, mAbrir, mSalvar, mSair, mudaCorInterna, mudaCorDeBorda, escolhePasso; // itens de menu
 	private String ultimoDiretorioAcessado; // memoriza em qual diretorio houve a ultima operacao de gravacao ou leitura
 	private JMenuItem bLivre, bFreeman, bRetangulo, bTriangulo; // botoes da interface para cada funcao
 	private JMenuItem bUndo, bRedo, bMarcador;
@@ -102,6 +102,7 @@ public class InterfaceGrafica extends JFrame implements ActionListener {
 		bTriangulo = new JMenuItem("Triangulo");
 		bUndo = new JMenuItem("Undo");
 		bRedo = new JMenuItem("Redo");
+		escolhePasso = new JMenuItem("Escolhe tamanho do passo");
 
 		// define os listeners dos botoes
 		bLivre.addActionListener(this);
@@ -110,6 +111,7 @@ public class InterfaceGrafica extends JFrame implements ActionListener {
 		bTriangulo.addActionListener(this);
 		bUndo.addActionListener(this);
 		bRedo.addActionListener(this);
+		escolhePasso.addActionListener(this);
 
 		// acrescenta no menu de funcoes
 		menuFuncoes.add(bUndo);
@@ -118,6 +120,7 @@ public class InterfaceGrafica extends JFrame implements ActionListener {
 		menuFuncoes.add(bFreeman);
 		menuFuncoes.add(bRetangulo);
 		menuFuncoes.add(bTriangulo);
+		menuFuncoes.add(escolhePasso);
 
 		return menuFuncoes;
 	}
@@ -149,9 +152,47 @@ public class InterfaceGrafica extends JFrame implements ActionListener {
 			painel.redo();
 		} else if (e.getSource() == bMarcador) {
 			painel.alteraMarcador();
+		} else if (e.getSource() == escolhePasso){
+			this.setPasso();
 		}
 	}
 
+	/*Método para escolher um passo novo (padrão é 20)*/
+	private void setPasso()
+	{
+		String passo = "";
+		boolean correto = false;
+		while (correto == false) 
+		{
+			passo= JOptionPane.showInputDialog("Escolhe o passo?");
+			if (passo == "") 
+			{
+				JOptionPane.showMessageDialog(null, "Você não respondeu a pergunta.");
+			}
+			else if(verificaInteiro(passo) == false)
+			{
+				JOptionPane.showMessageDialog(null, "Numéro não inteiro.");
+			}
+			else
+				correto = true;
+		}
+		painel.setPasso(Integer.parseInt(passo));
+		
+	}
+	public boolean verificaInteiro(String myString) 
+	{
+	    char[] c = myString.toCharArray();
+	    boolean d = true;
+	    for(int i = 0; i < c.length; i++)
+	    {
+	        if(!Character.isDigit(c[i])) 
+	        {
+	            d = false;
+	            break;
+	        }
+	    }
+	    return d;
+	}
 	/**
 	 * Metodo para reinicializar todo o desenho corrente
 	 */

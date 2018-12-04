@@ -16,6 +16,7 @@ public class Figura implements Serializable {
 	private ArrayList<Integer> movimentos; // Movimentos de Freeman {0,1,2,3,4,5,6,7}
 	private Color corBorda, corInterna; // Cores da figura
 	private boolean marker, fundo; // Definidores de figura (se tem marcador, se tem fundo)
+	private boolean debug; // Define se deve ocorrrer debug em console 
 	
 	// CONSTRUTORES
 	public Figura() {
@@ -27,6 +28,8 @@ public class Figura implements Serializable {
 		this.corInterna = Color.WHITE;
 		this.marker = true;
 		this.fundo = false;
+		// Define se deve ocorrrer debug em console
+		this.debug = false;
 	}
 	
 	public Figura(Color cor1, Color cor2, boolean marker, int mkDiam) {
@@ -38,6 +41,8 @@ public class Figura implements Serializable {
 		this.corInterna = cor2;
 		this.marker = marker;
 		this.fundo = false;
+		// Define se deve ocorrrer debug em console
+		this.debug = false;
 	}
 	
 	public Figura(Point inicio, int passo, ArrayList<Integer> movimentos,
@@ -50,6 +55,8 @@ public class Figura implements Serializable {
 		this.corInterna = cor2;
 		this.marker = marker;
 		this.fundo = fundo;
+		// Define se deve ocorrrer debug em console
+		this.debug = false;
 	}
 	
 	// GETTERS AND SETTERS
@@ -140,10 +147,12 @@ public class Figura implements Serializable {
 				mov2.add(x);
 			}
 		}
-		System.out.println("Triangulo - Pre Ajustes:");
-		System.out.println("Mov1=[" + printVet(mov1) + "]");
-		System.out.println("Mov2=[" + printVet(mov2) + "]");
-		System.out.println("Mov3=[" + printVet(mov3) + "]");
+		if (debug) {
+			System.out.println("Triangulo - Pre Ajustes:");
+			System.out.println("Mov1=[" + printVet(mov1) + "]");
+			System.out.println("Mov2=[" + printVet(mov2) + "]");
+			System.out.println("Mov3=[" + printVet(mov3) + "]");
+		}
 		while (mov1.size() != mov2.size() || mov1.size() != mov3.size()) {
 			if (mov1.size() > mov2.size() || mov1.size() > mov3.size()) {
 				mov1.remove(0);
@@ -153,10 +162,12 @@ public class Figura implements Serializable {
 				mov3.remove(0);
 			}
 		}
-		System.out.println("Triangulo - Pos Ajustes:");
-		System.out.println("Mov1=[" + printVet(mov1) + "]");
-		System.out.println("Mov2=[" + printVet(mov2) + "]");
-		System.out.println("Mov3=[" + printVet(mov3) + "]");
+		if (debug) {
+			System.out.println("Triangulo - Pos Ajustes:");
+			System.out.println("Mov1=[" + printVet(mov1) + "]");
+			System.out.println("Mov2=[" + printVet(mov2) + "]");
+			System.out.println("Mov3=[" + printVet(mov3) + "]");
+		}
 		movimentos.clear();
 		movimentos.addAll(mov1);
 		movimentos.addAll(mov2);

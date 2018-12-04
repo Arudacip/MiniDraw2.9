@@ -31,7 +31,7 @@ public class InterfaceGrafica extends JFrame implements ActionListener {
 	 * Constroi um objeto InterfaceGrafica
 	 */
 	public InterfaceGrafica() {
-		super("MiniDraw2 versao 9.4 - by Grupo 2");
+		super("MiniDraw2 versao 9.5 - by Grupo 2");
 		setSize(750, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
